@@ -8,6 +8,7 @@ from PyRTF import Renderer
 from PyRTF.Elements import Document
 from PyRTF.document.section import Section
 from PyRTF.document.paragraph import Paragraph
+from docx import Document as DocxDocument
 # This script fetches a Wikipedia page and prints its title and all the paragraphs.
 def fetch_wiki_page(url):
     try:
@@ -53,11 +54,25 @@ def create_rtf_file(title, all_next_tags):
     with open(title+'.rtf', 'w') as f:
         Renderer.Renderer().Write(doc, f)
 
+def create_docx_file(title, all_next_tags):
+    doc = DocxDocument()
+    # Add title
+    doc.add_heading(title, level=1)
+    # Add all next tags
+    for tag in all_next_tags:
+        if tag.name == 'h2':
+            doc.add_heading(tag.text, level=2)
+        elif tag.name == 'p':
+            doc.add_paragraph(tag.text)
+    # Save the document
+    doc.save(title+'.docx')
+
 if __name__ == "__main__":
     URL = "https://en.wikipedia.org/wiki/Web_crawler"
     html_content = fetch_wiki_page(URL)
     if html_content:
         title, all_next_tags = parse_wiki_page(html_content)
         create_rtf_file(title, all_next_tags)
+        create_docx_file(title, all_next_tags)
     else:
         print("Failed to retrieve the page.")
